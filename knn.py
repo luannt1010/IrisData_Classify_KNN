@@ -30,7 +30,7 @@ plt.show()
 # Histogram for distribution for each feature
 features = ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"]
 for feature in features:
-    sns.histplot(data=df, x=feature, hue="Species", kde=True, palette="Set1", bins=15)
+    sns.histplot(data=df, x=feature, hue="Species", kde=True, palette="Set1", bins=50)
     plt.show()
 
 def euclid_distance(training_point, test_point):
@@ -57,7 +57,7 @@ def get_final_answer(predictions):
             frequency[label] += 1
     return max(frequency, key=lambda x: frequency[x])
 
-def predict(X_train, X_test, y_train, k):
+def train(X_train, X_test, y_train, k):
     predicts = []
     for i in range(len(X_test)):
         test_point = X_test[i]
@@ -74,7 +74,7 @@ def optimize_k(X_train, X_test, y_train, y_test, loss=False):
     y_true = np.squeeze(y_test)
     best_k = {"k": [], "score": []}
     for k in ks:
-        predicts = predict(X_train, X_test, y_train, k)
+        predicts = train(X_train, X_test, y_train, k)
         if not loss:
             score = accuracy(y_true, predicts)
         else:
@@ -96,6 +96,11 @@ else:
     label = "Loss"
 k_best = k[idx_best]
 score_best = score[idx_best]
+print(f"Best K: {k_best}")
+if loss:
+    print(f"Best loss: {score_best}")
+else:
+    print(f"Best score: {score_best}")
 plt.plot(k, score, color="blue", linestyle="-", linewidth=2, label=label)
 plt.scatter(k_best, score_best, color='red', s=50, label=f'Best K={k_best}, Score={score_best}')
 plt.annotate(f"Best K={k_best}\nScore={score_best}",
@@ -106,4 +111,21 @@ plt.ylabel(label)
 plt.legend()
 plt.tight_layout()
 plt.show()
+
+# Predict unseen data
+data_test = np.array([[6.15, 3.05, 4.55, 1.35],
+                      [4.85, 3.55, 1.45, 0.25],
+                      [6.85, 3.05, 5.65, 2.05]])
+label_test = [["versicolor"],
+              ["setosa"],
+              ["virginica"]]
+for i in range(len(data_test)):
+    predicts = knn_predict(X_train, y_train, data_test[i], 5)
+    pred = get_final_answer(predicts)
+    print(f"Actual: {np.squeeze(label_test[i])}, Predict: {pred}")
+
+# Output:
+# Actual: versicolor, Predict: Iris-versicolor
+# Actual: setosa, Predict: Iris-setosa
+# Actual: virginica, Predict: Iris-virginica
 
